@@ -1,25 +1,32 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document} from 'mongoose';
-import { accessAuth } from './user.enum';
+import { Document, ObjectId } from 'mongoose';
+import { userGrade } from './userGrade/user.grade';
+import { Increment } from 'mongoose-auto-increment-ts';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: { createdAt: "createdAt", updatedAt: false }})
+@Schema()
 export class User {
-    @Prop({ default: new Date(), type: mongoose.Schema.Types.Date})
-    createdAt: Date;
+    @Prop({type: String, minLength: 4, maxLength: 20})
+    userId: string;
 
-    @Prop({ require: true })
-    email: string;
-
-    @Prop({ require: true, type: mongoose.Schema.Types.String })
+    @Prop({type: String, minLength: 4})
     password: string;
 
-    @Prop({ require: true, type: mongoose.Schema.Types.String })
-    username: string;
+    @Prop()
+    email: string;
 
-    @Prop({ require: true, default: accessAuth.GUEST })
-    accessAuth: accessAuth;
+    @Prop({default: userGrade.REMNANT})
+    grade: userGrade;
+
+    @Prop()
+    nickname: string;
+
+    @Prop()
+    phoneNumber: string;
+
+    @Prop()
+    id: Number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

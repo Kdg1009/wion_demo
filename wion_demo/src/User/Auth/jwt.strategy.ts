@@ -1,28 +1,29 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport/dist';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Payload } from './jwt.payload';
-import { User } from '../user.schema';
-import { UserService } from '../user.service';
-import { jwtConstants } from './jwt.constants';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { jwtConstants } from './auth.constants';
+import { User, UserDocument } from 'src/user/user.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private userService: UserService) {
+    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderBearerToken(),
-            secretOrKey: process.env.JWT_SECRET || jwtConstants.secret,
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ignoreExpiration: false,
+            secretOrKey: jwtConstants.secret,
         });
     }
 
-    async validate(payload: Payload) {
-        const { email, username } = payload;
-        const user: User = await this.userService.findOne({ email, username });  // if validation success what will server return?
-        
+    async validate(payload) {
+        const { email } = payload;
+        const user: User = await this.userModel.findOne({email});
+
         if(!user) {
-            throw new UnauthorizedException('no such user');
+            throw new UnauthorizedException();
         }
 
-        return user;
+        return { userid: user.userId, email: user.email, grade: user.grade, nickname: user.nickname, phoneNumber: user.phoneNumber, id: user.id };
     }
 }

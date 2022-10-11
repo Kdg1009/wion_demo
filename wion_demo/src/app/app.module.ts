@@ -1,15 +1,11 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { BoardModule } from 'src/board/board.module';
 import { DatabaseMoudule } from 'src/database/database.module';
-import { LoggerMiddleware } from 'src/middleware/logger.middleware';
-import { UserModule } from 'src/User/user.module';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [DatabaseMoudule, UserModule],
+  imports: [DatabaseMoudule, BoardModule,UserModule],
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule{
-  configure(consumer: MiddlewareConsumer) {
-      consumer.apply(LoggerMiddleware).forRoutes('User');
-  }
-}
+export class AppModule {}
