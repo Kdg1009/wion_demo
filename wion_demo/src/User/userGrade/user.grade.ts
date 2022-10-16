@@ -1,4 +1,5 @@
 export const enum userGrade {
     REMNANT = 'REMNANT',
-    COUNCILOR = 'COUNCILOR'
+    COUNCILOR = 'COUNCILOR',
+    MASTER = "MASTER"
 }

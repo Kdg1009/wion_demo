@@ -7,23 +7,28 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(private userService: UserService) {}
 
-    @Get('/login')
-    LoginPage() {
-        return;
-    }
+    // @Get('/login')
+    // LoginPage() {
+    //     return;
+    // }
 
-    @Post('/login')
-    login(@Body() userLoginDto: userLoginDto): Promise<{accessToken: string}> {
-        return this.userService.login(userLoginDto);
-    }
+    // @Post('/login')
+    // login(@Body() userLoginDto: userLoginDto): Promise<{accessToken: string}> {
+    //     return this.userService.login(userLoginDto);
+    // }
 
-    @Get('/signup')
-    SignUpPage() {
-        return;
-    }
+    // @Get('/signup')
+    // SignUpPage() {
+    //     return;
+    // }
 
     @Post('/signup')
     signup(@Body() userSignupDto: userSignupDto): Promise<void> {
-        return this.userService.signup(userSignupDto);
+        return this.userService.createUser(userSignupDto);
     }
+
+    // @Post('/logout')
+    // logout() {
+        
+    // }
 }
