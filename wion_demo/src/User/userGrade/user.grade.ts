@@ -1,4 +1,4 @@
-export const enum userGrade {
+export enum userGrade {
     REMNANT = 'REMNANT',
     COUNCILOR = 'COUNCILOR',
     MASTER = "MASTER"

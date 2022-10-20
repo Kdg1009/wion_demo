@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, ObjectId } from 'mongoose';
+import mongoose, { Document, ObjectId } from 'mongoose';
 import { userGrade } from './userGrade/user.grade';
 import { Increment } from 'mongoose-auto-increment-ts';
 
@@ -7,29 +7,28 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-    @Prop()
-    kakaoId: string;
+    @Prop({
+        type: mongoose.Types.ObjectId,
+        required: true,
+        default: () => new mongoose.Types.ObjectId(),
+    })
+    _id: string;
     
-    @Prop({type: String, minLength: 4, maxLength: 20})
-    userId: string;
-
-    @Prop({type: String, minLength: 4})
-    password: string;
+    //later, change to refresh token, or just remove this
+    @Prop({ required: false})
+    kakaoId: string;
 
     @Prop()
     email: string;
+    
+    @Prop({type: String, minLength: 8})
+    password: string;
+
+    @Prop({type: String, minLength: 1, maxLength: 20})
+    username: string;
 
     @Prop({default: userGrade.REMNANT})
     grade: userGrade;
-
-    @Prop()
-    nickname: string;
-
-    @Prop()
-    phoneNumber: string;
-
-    @Prop()
-    id: Number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

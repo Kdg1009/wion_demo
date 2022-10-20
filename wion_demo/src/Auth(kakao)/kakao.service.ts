@@ -2,15 +2,32 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { KakaoCodeDto } from './DTO/kakao.accessCode';
 import { kakao_id } from './kakao_ID';
 import axios, { AxiosResponse } from 'axios';
-import { UserDocument, User } from 'src/user/user.schema';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
 import { UserService } from 'src/user/user.service';
+import { response, Request, Response } from 'express'; 
+import cookieParser from 'cookie-parser';
+import { InjectModel } from '@nestjs/mongoose';
+import { Token, TokenDocument } from './kakao.token.schema';
+import mongoose, { Model } from 'mongoose';
 
 @Injectable()
 export class KakaoService {
-    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>,
-                private userService: UserService) {}
+    constructor(private userService: UserService,
+                @InjectModel(Token.name) private tokenModel: Model<TokenDocument>) {}
+
+    //1. Running this app, first render authLoading page
+    //2. get refresh token`s id from user`s broswer
+    //2-1) if refresh id exists in db, get new accessToken from kakao server
+    //2-2) else, move to login page
+    async authLoading(req: Request) {
+        const refresh_id = req.cookies['wion_token'];
+
+        const isExist = this.tokenModel.findOne({_id: refresh_id});
+        if(!isExist) {
+            return response.redirect('/kakao/login');
+        } else {
+            
+        }
+    }   
 
     async loginKakao(): Promise<AxiosResponse> {
         const REST_API_KEY = kakao_id.client_id;
@@ -20,7 +37,7 @@ export class KakaoService {
         return await axios.get(getCodeUrl);
     }
     
-    async getKakaoInfo(KakaoCodeDto: KakaoCodeDto) {
+    async getKakaoInfo(KakaoCodeDto: KakaoCodeDto, res: Response) {
         
         //authorization_code
         const { code } = KakaoCodeDto; 
@@ -46,7 +63,12 @@ export class KakaoService {
         }
 
         //access token
-        const { access_token, refresh_token } = token_res.data; 
+        //access token은 쿠키에 넣고, refresh token은 db에 넣고 index값을 쿠키에 저장
+        const { access_token, refresh_token } = token_res.data;
+        // const refresh_id = new mongoose.Types.ObjectId();
+        // this.tokenModel.create({refresh_id, refresh_token});
+        let newToken = new this.tokenModel({_refreshToken: refresh_token});
+        await newToken.save();
 
         //geting user Info using access token
         const getUserUrl = 'https://kapi.kakao.com/v2/user/me';
@@ -60,10 +82,17 @@ export class KakaoService {
         const { userid } = userInfo.data;
 
         //if user haven`t sign up, gen user`s account
-        const isExist = await this.userModel.findOne({kakaoId: userid});
+        const isExist = await this.userService.findOne(userid);
 
         if(!isExist) {
-            
+            return response.redirect('../user/user/signup')
+        } else {
+            //return refresh token id
+            res.setHeader('Authorization', 'Bearer ' + newToken._id);
+            res.cookie('wion_token', newToken._id, {
+                httpOnly: true,
+            });
+            //return to main page
         }
     }
 }

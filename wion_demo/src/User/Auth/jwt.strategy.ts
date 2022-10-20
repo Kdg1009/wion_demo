@@ -1,6 +1,6 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { jwtConstants } from './auth.constants';
 import { User, UserDocument } from 'src/user/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,19 +11,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
+            ignoreExpiration: true,
             secretOrKey: jwtConstants.secret,
         });
     }
 
-    async validate(payload) {
+    async validate(payload): Promise<any> {
         const { email } = payload;
         const user: User = await this.userModel.findOne({email});
 
         if(!user) {
-            throw new UnauthorizedException();
+            Logger.log("jwt_strategy: no such user");
+            throw new UnauthorizedException('no such user');
         }
 
-        return { userid: user.userId, email: user.email, grade: user.grade, nickname: user.nickname, phoneNumber: user.phoneNumber, id: user.id };
+        Logger.log('login success');
+        //const userInfo = { id: user.id, userId: user.userId, grade: user.grade };
+        //return userInfo;
+        return user;
     }
 }

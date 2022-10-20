@@ -1,4 +1,5 @@
 import { Body, Controller,Get,Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { userLoginDto } from './dto/user.login.dto';
 import { userSignupDto } from './dto/user.signup.dto';
 import { UserService } from './user.service';
@@ -7,28 +8,22 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(private userService: UserService) {}
 
-    // @Get('/login')
-    // LoginPage() {
-    //     return;
-    // }
+    // < Routes for JWT Authentication >
+    @Post('/login')
+    returnJwt(@Body() userLoginDto: userLoginDto): Promise<{accessToken: string}> {
+        return this.userService.returnJwt(userLoginDto);
+    }
 
-    // @Post('/login')
-    // login(@Body() userLoginDto: userLoginDto): Promise<{accessToken: string}> {
-    //     return this.userService.login(userLoginDto);
-    // }
+    // 쿠키에 있는 jwt token 만료일을 1초미만으로 잡기
+    @Get('/logout')
+    @UseGuards(AuthGuard())
+    logout() {
+        
+    }
 
-    // @Get('/signup')
-    // SignUpPage() {
-    //     return;
-    // }
-
+    // < Routes for Kakao api >
     @Post('/signup')
     signup(@Body() userSignupDto: userSignupDto): Promise<void> {
         return this.userService.createUser(userSignupDto);
     }
-
-    // @Post('/logout')
-    // logout() {
-        
-    // }
 }
