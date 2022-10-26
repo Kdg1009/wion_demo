@@ -11,13 +11,12 @@ export class BoardRepository {
 
     async create(createBoardDto: createBoardDto): Promise<responseBoardDto> {
         const { title, content, user } = createBoardDto;
-        console.log('repo user: ',user.username);
         const board = new this.boardModel({ title: title,
                                             content: content,
-                                            user: user });
+                                            user: user, });
         await board.save();
         
-        return { _id: board._id, 
+        return { /*_id: board._id, */
                 title: board.title, 
                 content: board.content, 
                 comments: [],
@@ -31,18 +30,18 @@ export class BoardRepository {
     }
 
     async findOne(id: string): Promise<Board> {
-        console.log('repo: ',id);
-        const board =  await this.boardModel.findOne({_id: id});
-        console.log('board: ',board);
-        return board;
+        const board =  await this.boardModel.findById(id);
+        return (await board.populate('comments')).populate('user');
     }
 
-    async a() {
-        const id =  '635138b8904f2fadd61d47d6';
-        const board = await this.boardModel.findOne({title: 'eeee'});
-        if(!board) {
-            throw new NotFoundException('board not found');
+    async update(id: string, content: string[]=null, new_comment=null) {
+        // if user dosen`t updates content
+        if(!content) {
+            //update comment
+            await this.boardModel.updateOne({_id: id}, {comments: new_comment});
+        } else {
+            //update content
+            await this.boardModel.updateOne({_id:id},{content: content});
         }
-        return board;
     }
 }

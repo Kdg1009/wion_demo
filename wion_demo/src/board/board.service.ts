@@ -5,7 +5,6 @@ import { createBoardDto } from './DTO/board.create.dto';
 import { responseBoardDto } from './DTO/board.response.dto';
 import { createCommentDto } from './DTO/comment.create.dto';
 import { CommentRepository } from './repository/comment.repository';
-import { response } from 'express';
 
 @Injectable()
 export class BoardService {
@@ -13,7 +12,6 @@ export class BoardService {
                 private commentRepository: CommentRepository) {}
 
     async getBoardById(id: string): Promise<responseBoardDto> {
-        console.log(id);
         const board = await this.boardRepository.findOne(id);
 
         if(!board) {
@@ -23,8 +21,8 @@ export class BoardService {
         try {
             for (let comment of board.comments) {
                 const username = comment.user.username;
+                console.log(`username: ${username}`);
                 const content = comment.content;
-                console.log('content success');
                 comments.push({
                     username: username,
                     content: content
@@ -33,7 +31,7 @@ export class BoardService {
         } catch {
             console.log('no comments');
         }
-        return { _id: board._id.toString(),
+        return { /*_id: board._id.toString(),*/
             title: board.title,
             content: board.content,
             likes: board.likes,
@@ -43,14 +41,12 @@ export class BoardService {
 
     async createBoard(user: User, createBoardDto: createBoardDto): Promise<responseBoardDto> {
         const { title, content } = createBoardDto;
-        console.log('service user: ',user.username);
         const board = await this.boardRepository.create({
             title: title,
             content: content,
             user: user
         })
 
-        console.log('new board: \n',board);
         return board;
     }
 
@@ -59,14 +55,13 @@ export class BoardService {
         if(!board) {
             throw new NotFoundException(`no board found by id: ${id}`);
         }
+
         const comment = await this.commentRepository.create(user, createCommentDto);
-        
-        board.comments.push(comment);
+        const newComment = board.comments;
+        newComment.push(comment);
 
-        return response.redirect('board/getBoard/:id');
-    }
+        this.boardRepository.update(id,undefined,newComment);
 
-    async a() {
-        return this.boardRepository.a();
+        //return response.redirect('board/getBoard/:id');
     }
 }

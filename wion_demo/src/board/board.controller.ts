@@ -20,15 +20,12 @@ export class BoardController {
 
     @Get('/getBoard/:id')
     getBoard(@Param('id') id: string): Promise<responseBoardDto> {
-        console.log(`id: ${id}`);
-        console.log('controll pass');
         return this.boardService.getBoardById(id);
     }
 
     @Post('/createBoard')
     @UseGuards(AuthGuard())
     createBoard(@UserInfo() user: User, @Body() createBoardDto: createBoardDto): Promise<responseBoardDto> {
-        console.log('controller user: ' , user.username);
         return this.boardService.createBoard(user, createBoardDto);
     }
 
@@ -42,11 +39,5 @@ export class BoardController {
     @UseGuards(AuthGuard())
     deleteBoard() {
 
-    }
-
-    // Testing route
-    @Get('bb')
-    a() {
-        return this.boardService.a(); 
     }
 }

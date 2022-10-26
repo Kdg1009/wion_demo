@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserDocument, User } from './user.schema';
 import { Model } from 'mongoose';
@@ -23,11 +23,14 @@ export class UserService {
         //await this.userModel.create(signUpDto);
         
         const { username, password, email } = signUpDto;
-
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        await this.userModel.create({ username, password: hashedPassword, email });
+        if(!await this.userModel.findOne({username: username})) {
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(password, salt);
+    
+            await this.userModel.create({ username, password: hashedPassword, email });
+        } else {
+            throw new ForbiddenException('user already exists');
+        }
     }
 
     // < Functions for JWT Token >

@@ -10,12 +10,14 @@ export class CommentRepository {
     constructor(@InjectModel (Comment.name) private commentModel: Model<CommentDocument>) {}
 
     async create(user: User, createCommentDto: createCommentDto) {
-        const { content } = createCommentDto;
+        const content = createCommentDto;
+        console.log('new content: ',content);
         const comment = new this.commentModel({
             user: user,
             content: content
         })
 
+        await comment.save();
         return comment;
     }
 }
